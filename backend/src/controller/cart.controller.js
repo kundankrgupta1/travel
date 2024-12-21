@@ -50,14 +50,17 @@ const getCart = async (req, res) => {
 	const { _id } = req.user;
 	try {
 		const cart = await cartModel.findOne({ user: _id }).populate("items.trip");
-		console.log("getCard",cart.items)
+
 		if (!cart || cart.items.length === 0) {
 			return res.status(404).json({
 				message: "Cart is empty",
 				success: false
 			});
 		}
-		return res.status(200).json(cart);
+		const totalPrice = cart.items.reduce((total, item) => {
+			return total + item.trip.price * item.quantity;
+		}, 0);
+		return res.status(200).json({cart, totalPrice});
 	} catch (error) {
 		return res.status(500).json({
 			message: error.message,
